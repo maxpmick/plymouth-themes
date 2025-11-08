@@ -1,0 +1,122 @@
+// Minimal statue animation on a pure black field
+
+Window.SetBackgroundTopColor(0.0, 0.0, 0.0);
+Window.SetBackgroundBottomColor(0.0, 0.0, 0.0);
+
+screen.w = Window.GetWidth(0);
+screen.h = Window.GetHeight(0);
+screen.half.w = screen.w / 2;
+screen.half.h = screen.h / 2;
+
+fun center_statue(image)
+  {
+    statue_sprite.SetX(Window.GetX() + (screen.w - image.GetWidth()) / 2);
+    statue_sprite.SetY(Window.GetY() + (screen.h - image.GetHeight()) / 2);
+  }
+
+fun scale_image(image, factor)
+  {
+    if (factor == 1)
+      return image;
+
+    scaled_width = Math.Int(image.GetWidth() * factor);
+    scaled_height = Math.Int(image.GetHeight() * factor);
+
+    if (scaled_width < 1)
+      scaled_width = 1;
+    if (scaled_height < 1)
+      scaled_height = 1;
+
+    return image.Scale(scaled_width, scaled_height);
+  }
+
+question = null;
+answer = null;
+message = null;
+
+text_scale = null;
+text_scale.prompt = 1.5;
+text_scale.bullet = 1.3;
+
+bullets = null;
+prompt = null;
+bullet = null;
+bullet.base_image = Image.Text("*", 1, 1, 1);
+bullet.image = scale_image(bullet.base_image, text_scale.bullet);
+
+frame.count = 16;
+frame.speed = 2.0;
+
+for (i = 0; i < frame.count; i++)
+  statue_image[i] = Image("statue-" + i + ".png");
+
+statue_sprite = Sprite(statue_image[0]);
+center_statue(statue_image[0]);
+
+progress = 0;
+
+fun refresh_callback ()
+  {
+    current_index = Math.Int(progress / frame.speed) % frame.count;
+    current_image = statue_image[current_index];
+
+    statue_sprite.SetImage(current_image);
+    center_statue(current_image);
+    progress++;
+  }
+
+Plymouth.SetRefreshFunction (refresh_callback);
+
+fun DisplayQuestionCallback(prompt_text, entry) {
+    question = null;
+    answer = null;
+
+    if (entry == "")
+        entry = "<answer>";
+
+    question.image = Image.Text(prompt_text, 1, 1, 1);
+    question.sprite = Sprite(question.image);
+    question.sprite.SetX(screen.half.w - question.image.GetWidth() / 2);
+    question.sprite.SetY(screen.h - 4 * question.image.GetHeight());
+
+    answer.image = Image.Text(entry, 0.75, 0.75, 0.75);
+    answer.sprite = Sprite(answer.image);
+    answer.sprite.SetX(screen.half.w - answer.image.GetWidth() / 2);
+    answer.sprite.SetY(screen.h - 2 * answer.image.GetHeight());
+}
+Plymouth.SetDisplayQuestionFunction(DisplayQuestionCallback);
+
+fun DisplayPasswordCallback(nil, bulletCount) {
+    totalWidth = bulletCount * bullet.image.GetWidth();
+    startPos = screen.half.w - totalWidth / 2;
+
+    prompt_base_image = Image.Text("Enter Password", 1, 1, 1);
+    prompt.image = scale_image(prompt_base_image, text_scale.prompt);
+    prompt.sprite = Sprite(prompt.image);
+    prompt.sprite.SetX(screen.half.w - prompt.image.GetWidth() / 2);
+    prompt.sprite.SetY(screen.h - 4 * prompt.image.GetHeight());
+
+    bullets = null;
+    for (i = 0; i < bulletCount; i++) {
+        bullets[i].sprite = Sprite(bullet.image);
+        bullets[i].sprite.SetX(startPos + i * bullet.image.GetWidth());
+        bullets[i].sprite.SetY(screen.h - 2 * bullet.image.GetHeight());
+    }
+}
+Plymouth.SetDisplayPasswordFunction(DisplayPasswordCallback);
+
+fun DisplayNormalCallback() {
+    bullets = null;
+    prompt = null;
+    message = null;
+    question = null;
+    answer = null;
+}
+Plymouth.SetDisplayNormalFunction(DisplayNormalCallback);
+
+fun MessageCallback(text) {
+    message.image = Image.Text(text, 1, 1, 1);
+    message.sprite = Sprite(message.image);
+    message.sprite.SetPosition(screen.half.w - message.image.GetWidth() / 2, message.image.GetHeight());
+}
+Plymouth.SetMessageFunction(MessageCallback);

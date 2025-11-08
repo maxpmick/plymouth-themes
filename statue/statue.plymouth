@@ -1,0 +1,9 @@
+[Plymouth Theme]
+Name=statue
+Description=Monochrome statue animation with password prompt
+Comment=Created for the statue image sequence
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/statue
+ScriptFile=/usr/share/plymouth/themes/statue/statue.script
